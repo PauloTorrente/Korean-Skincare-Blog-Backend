@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt'); 
+const bcrypt = require('bcryptjs'); 
 const { neon } = require('@neondatabase/serverless');
 const jwt = require('jsonwebtoken');
 const sql = neon(process.env.DATABASE_URL);
