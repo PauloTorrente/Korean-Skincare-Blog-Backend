@@ -81,7 +81,9 @@ const loginUserController = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        const isMatch = await bcrypt.compare(password, user.password_hash);
+
+        // Compare password hash stored in the DB
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid password' });
         }
@@ -99,7 +101,7 @@ const loginUserController = async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        // Respond with user data and tokens
+        // Ensure user details are under a `user` key in the response
         res.status(200).json({
             message: 'Login successful',
             token,
