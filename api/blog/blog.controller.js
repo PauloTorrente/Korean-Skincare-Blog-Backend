@@ -1,6 +1,7 @@
 const {
     createBlogPost,
     getUserBlogs,
+    getAllBlogPosts,
     updateBlogPost,
     deleteBlogPost,
 } = require('./blog.model');
@@ -13,6 +14,16 @@ const createBlogPostController = async (req, res) => {
         res.status(201).json(blogPost);
     } catch (error) {
         res.status(400).json({ error: error.message });
+    }
+};
+
+// Get all blog posts (public)
+const getAllBlogsController = async (req, res) => {
+    try {
+        const blogs = await getAllBlogPosts();
+        res.status(200).json(blogs);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch all blogs' });
     }
 };
 
@@ -53,6 +64,7 @@ const deleteBlogPostController = async (req, res) => {
 module.exports = {
     createBlogPostController,
     getUserBlogsController,
+    getAllBlogsController, 
     updateBlogPostController,
     deleteBlogPostController,
 };

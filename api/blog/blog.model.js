@@ -12,6 +12,17 @@ const createBlogPost = async (userId, title, content, imageUrl) => {
     }
 };
 
+// Get all blog posts (public)
+const getAllBlogPosts = async () => {
+    try {
+        const result = await sql`SELECT * FROM blog`;
+        return result;
+    } catch (error) {
+        console.error('Error fetching all blogs:', error);
+        throw new Error('Failed to fetch all blogs');
+    }
+};
+
 // Get all blog posts by a user
 const getUserBlogs = async (userId) => {
     try {
@@ -54,6 +65,7 @@ const deleteBlogPost = async (blogId) => {
 
 module.exports = {
     createBlogPost,
+    getAllBlogPosts, 
     getUserBlogs,
     updateBlogPost,
     deleteBlogPost,
