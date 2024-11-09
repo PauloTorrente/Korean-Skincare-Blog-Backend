@@ -1,16 +1,15 @@
 const {
     createBlogPost,
-    getUserBlogs,
     getAllBlogPosts,
     updateBlogPost,
     deleteBlogPost,
 } = require('./blog.model');
 
-// Create a new blog post
+// Create a new blog post (no userId required)
 const createBlogPostController = async (req, res) => {
-    const { userId, title, content, imageUrl } = req.body;
+    const { title, content, imageUrl } = req.body;
     try {
-        const blogPost = await createBlogPost(userId, title, content, imageUrl);
+        const blogPost = await createBlogPost(title, content, imageUrl); 
         res.status(201).json(blogPost);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -24,17 +23,6 @@ const getAllBlogsController = async (req, res) => {
         res.status(200).json(blogs);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch all blogs' });
-    }
-};
-
-// Get all blog posts by user
-const getUserBlogsController = async (req, res) => {
-    const userId = req.params.id;
-    try {
-        const blogs = await getUserBlogs(userId);
-        res.status(200).json(blogs);
-    } catch (error) {
-        res.status(500).json({ error: 'Failed to fetch user blogs' });
     }
 };
 
@@ -63,8 +51,7 @@ const deleteBlogPostController = async (req, res) => {
 
 module.exports = {
     createBlogPostController,
-    getUserBlogsController,
-    getAllBlogsController, 
+    getAllBlogsController,
     updateBlogPostController,
     deleteBlogPostController,
 };
