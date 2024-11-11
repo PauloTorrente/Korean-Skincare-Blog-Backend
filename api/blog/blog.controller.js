@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = process.env;
 const {
     createBlogPost,
     getAllBlogPosts,
@@ -5,11 +7,33 @@ const {
     deleteBlogPost,
 } = require('./blog.model');
 
-// Create a new blog post (no userId required)
+// Middleware to verify JWT token
+const verifyToken = (req, res, next) => {
+    const token = req.headers.authorization?.split(' ')[1]; // Extract token from the header
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+        req.user = decoded; // Attach user info to the request object
+        next(); // Proceed to the next handler
+    });
+};
+
+// Create a new blog post (requires user to be logged in)
 const createBlogPostController = async (req, res) => {
     const { title, content, imageUrl } = req.body;
     try {
-        const blogPost = await createBlogPost(title, content, imageUrl); 
+        // Ensure the user is logged in and has a valid JWT token
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const userId = req.user.id; // Get the user ID from the decoded token
+        const blogPost = await createBlogPost(title, content, imageUrl, userId);
         res.status(201).json(blogPost);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -49,9 +73,27 @@ const deleteBlogPostController = async (req, res) => {
     }
 };
 
+// Refresh access token using refresh token
+const refreshAccessTokenController = async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        return res.status(400).json({ message: 'No refresh token provided' });
+    }
+
+    try {
+        const decoded = jwt.verify(refreshToken, JWT_SECRET);
+        const newAccessToken = jwt.sign({ id: decoded.id }, JWT_SECRET, { expiresIn: '1h' });
+        res.json({ accessToken: newAccessToken });
+    } catch (err) {
+        res.status(403).json({ message: 'Invalid refresh token' });
+    }
+};
+
 module.exports = {
     createBlogPostController,
     getAllBlogsController,
     updateBlogPostController,
     deleteBlogPostController,
+    refreshAccessTokenController,
 };

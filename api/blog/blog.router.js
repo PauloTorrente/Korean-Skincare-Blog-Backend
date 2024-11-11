@@ -6,6 +6,7 @@ const {
     deleteBlogPostController,
 } = require('./blog.controller');
 const authenticate = require('../../middlewares/auth.middleware');
+const { refreshAccessTokenController } = require('./blog.controller');
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.put('/:blogId', authenticate, updateBlogPostController);
 
 // Route to delete a blog post
 router.delete('/:blogId', authenticate, deleteBlogPostController);
+router.post('/refresh', refreshAccessTokenController);
 
 module.exports = router;
