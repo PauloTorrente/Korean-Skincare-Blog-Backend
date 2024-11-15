@@ -1,13 +1,20 @@
-// products.controller.js
-const Product = require('./products.model'); // Import product model
+const Product = require('./products.model');
 
+// Add a new product
 const addProduct = async (req, res) => {
   try {
     const { name, price, description, category, brand } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    // Updated to call createProduct from products.model.js
-    const newProduct = await Product.createProduct({ name, price, description, category, brand, image });
+    const newProduct = await Product.createProduct({
+      name,
+      price,
+      description,
+      category,
+      brand,
+      image,
+    });
+
     res.status(201).json(newProduct);
   } catch (error) {
     console.error('Error adding product:', error);
@@ -15,10 +22,21 @@ const addProduct = async (req, res) => {
   }
 };
 
+// Get all products (public endpoint)
+const getProducts = async (req, res) => {
+  try {
+    const products = await Product.getAllProducts();
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Error fetching products', error: error.message });
+  }
+};
+
+// Get products by category
 const getProductByCategory = async (req, res) => {
   const { category } = req.params;
   try {
-    // Updated to call getProductsByCategory from products.model.js
     const products = await Product.getProductsByCategory(category);
     if (!products.length) {
       return res.status(404).json({ message: 'No products found for this category' });
@@ -30,10 +48,10 @@ const getProductByCategory = async (req, res) => {
   }
 };
 
+// Get a product by ID
 const getProductById = async (req, res) => {
   const { id } = req.params;
   try {
-    // Updated to call getProductById from products.model.js
     const product = await Product.getProductById(id);
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
@@ -45,11 +63,11 @@ const getProductById = async (req, res) => {
   }
 };
 
+// Update a product by ID
 const updateProduct = async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
   try {
-    // Updated to call updateProduct from products.model.js
     const updatedProduct = await Product.updateProduct(id, updateData);
     if (!updatedProduct) {
       return res.status(404).json({ message: 'Product not found' });
@@ -61,16 +79,10 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// If delete functionality is needed
-const deleteProduct = async (req, res) => {
-  const { id } = req.params;
-  try {
-    await Product.deleteProduct(id);
-    res.status(200).json({ message: 'Product deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting product:', error);
-    res.status(500).json({ message: 'Error deleting product', error: error.message });
-  }
+module.exports = {
+  addProduct,
+  getProducts,
+  getProductByCategory,
+  getProductById,
+  updateProduct,
 };
-
-module.exports = { addProduct, getProductByCategory, getProductById, updateProduct, deleteProduct };
