@@ -14,7 +14,7 @@ app.use(express.json());
 
 // CORS Middleware to allow requests from specific origin
 app.use(cors({
-    origin: 'http://localhost:5173', // Frontend URL (adjust if needed)
+    origin: ['http://localhost:5173', 'https://korean-skincare-e-commerce.vercel.app'], // Add your Vercel domain here
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
