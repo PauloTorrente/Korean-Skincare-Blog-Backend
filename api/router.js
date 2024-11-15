@@ -2,7 +2,7 @@ const express = require('express');
 const authRouter = require('./auth/auth.router');
 const usersRouter = require('./users/users.router');
 const blogRouter = require('./blog/blog.router');
-const productsRouter = require('./products/products.router'); 
+const productsRouter = require('./products/products.router');
 const authenticate = require('../middlewares/auth.middleware');
 const checkAdmRole = require('../middlewares/role.middleware');
 
@@ -18,7 +18,9 @@ console.log('productsRouter type:', typeof productsRouter);
 router.use('/auth', authRouter);
 router.use('/users', authenticate, checkAdmRole, usersRouter);
 router.use('/blog', authenticate, blogRouter);
-router.use('/products', authenticate, productsRouter); 
+
+// Public route for products (e.g., viewing products)
+router.use('/products', productsRouter); // No authentication here
 
 // Refresh token route
 router.post('/refresh', require('./blog/blog.controller').refreshAccessTokenController);
