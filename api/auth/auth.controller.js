@@ -1,57 +1,58 @@
 const authService = require('./auth.service');
+const bcrypt = require('bcrypt'); 
+const { getUserByEmailService } = require('./users.service');
 
 // Login function
 const login = async (req, res) => {
-  const { username, password } = req.body; 
+  const { email, password } = req.body;
+  console.log(`Attempting login for email: ${email}`);
+
   try {
-    const token = await authService.login(username, password);
-    res.status(200).json({ token });
+    // Fetch user by email
+    const user = await getUserByEmailService(email);
+    if (!user) {
+      console.warn(`No user found with email: ${email}`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Validate password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      console.warn('Invalid password attempt');
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate token with role and user details
+    const token = await authService.generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    console.log(`Login successful for user: ${email}`);
+    res.status(200).json({ token, role: user.role });
   } catch (error) {
-    console.error('Login error:', error); // Log the error for debugging
-    res.status(401).json({ message: 'Invalid credentials' });
+    console.error(`Login error for email ${email}:`, error.message);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
 // Register function
 const register = async (req, res) => {
-  const { username, email, password } = req.body; 
+  const { username, email, password, role = 'user' } = req.body; 
   try {
-    const token = await authService.register(username, email, password);
+    // Register user
+    const token = await authService.register({ username, email, password, role });
+
+    console.log(`User registered successfully: ${email}`);
     res.status(201).json({ token });
   } catch (error) {
-    console.error('Registration error:', error); // Log the error for debugging
+    console.error(`Registration error for email ${email}:`, error.message);
     res.status(400).json({ message: 'Registration failed' });
-  }
-};
-
-const loginUserController = async (req, res) => {
-  const { email, password } = req.body;
-  console.log(`Attempting login for email: ${email}`); // Log email from request
-
-  try {
-      const user = await getUserByEmailService(email);
-      if (!user) {
-          console.log(`No user found with email: ${email}`);
-          return res.status(404).json({ error: 'User not found' });
-      }
-      
-      console.log(`Retrieved user: ${JSON.stringify(user)}`); // Log user details
-
-      const isMatch = await bcrypt.compare(password, user.password); // Adjust to correct password field
-      if (!isMatch) {
-          console.log('Password does not match');
-          return res.status(401).json({ error: 'Invalid password' });
-      }
-
-      res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-      console.error(`Error logging in: ${error.message}`);
-      res.status(500).json({ error: error.message });
   }
 };
 
 module.exports = {
   login,
   register,
-  loginUserController,
 };

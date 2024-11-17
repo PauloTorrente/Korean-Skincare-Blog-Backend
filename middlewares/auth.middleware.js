@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = process.env;
 
 const authenticate = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1]; // Get token from the "Bearer" scheme
+  const token = req.headers['authorization']?.split(' ')[1];
 
   // Debugging log
   console.log('Authorization middleware invoked. Headers:', req.headers);
@@ -13,9 +13,11 @@ const authenticate = (req, res, next) => {
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
+      console.error('Authentication failed:', err); // Detailed error logging
       return res.status(403).json({ message: 'Failed to authenticate token' });
     }
-    req.userId = decoded.id; // Store user ID in request
+    req.userId = decoded.id;
+    req.role = decoded.role; // Add role to req
     next();
   });
 };
