@@ -4,13 +4,13 @@ const {
     getAllBlogsController,
     updateBlogPostController,
     deleteBlogPostController,
+    refreshAccessTokenController,
 } = require('./blog.controller');
 const authenticate = require('../../middlewares/auth.middleware');
-const { refreshAccessTokenController } = require('./blog.controller');
 
 const router = express.Router();
 
-// Route to create a new blog post (no userId required)
+// Route to create a new blog post (authentication required)
 router.post('/', authenticate, createBlogPostController);
 
 // Route to get all blog posts (public)
@@ -21,6 +21,8 @@ router.put('/:blogId', authenticate, updateBlogPostController);
 
 // Route to delete a blog post
 router.delete('/:blogId', authenticate, deleteBlogPostController);
+
+// Route to refresh access token
 router.post('/refresh', refreshAccessTokenController);
 
 module.exports = router;

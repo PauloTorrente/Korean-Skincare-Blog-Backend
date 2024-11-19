@@ -5,7 +5,8 @@ const {
     getUserByIdController,
     updateUserController,
     deleteUserController,
-    loginUserController
+    getUserReviewsController,
+    loginUserController,
 } = require('./users.controller');
 const authenticate = require('../../middlewares/auth.middleware');
 const checkAdmRole = require('../../middlewares/role.middleware'); 
@@ -26,6 +27,9 @@ router.put('/:id', authenticate, checkAdmRole, updateUserController);
 
 // Route to delete a user (admin only)
 router.delete('/:id', authenticate, checkAdmRole, deleteUserController);
+
+// Route to get user reviews by user ID (admin only)
+router.get('/:id/reviews', authenticate, checkAdmRole, getUserReviewsController);
 
 // Route for user login
 router.post('/login', loginUserController);

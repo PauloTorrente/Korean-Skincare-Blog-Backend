@@ -1,25 +1,24 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = process.env;
+const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
+// Authentication middleware
 const authenticate = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
+    const token = req.headers.authorization?.split(' ')[1]; // Extract token from header
+    console.log('Token:', token); // Log the token for debugging
 
-  // Debugging log
-  console.log('Authorization middleware invoked. Headers:', req.headers);
-
-  if (!token) {
-    return res.status(401).json({ message: 'No token provided' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.error('Authentication failed:', err); // Detailed error logging
-      return res.status(403).json({ message: 'Failed to authenticate token' });
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
     }
-    req.userId = decoded.id;
-    req.role = decoded.role; // Add role to req
-    next();
-  });
+
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET); // Verify token
+        console.log('Decoded user:', decoded); // Log decoded user for debugging
+        req.user = decoded; // Assign user info to req.user
+        next();
+    } catch (error) {
+        console.error('Token verification failed:', error); // Log the error
+        return res.status(401).json({ message: 'Invalid token' });
+    }
 };
 
 module.exports = authenticate;

@@ -1,5 +1,4 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 const {
@@ -8,7 +7,9 @@ const {
     getUserById,
     updateUser,
     deleteUser,
-    getUserByEmail
+    getUserReviews,
+    getUserByUsername,  // Updated function to get user by username
+    getUserGrades 
 } = require('./users.model');
 
 // Create a new user
@@ -16,7 +17,7 @@ const createUserController = async (req, res) => {
     const { username, password, email, role } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const userRole = role || 'user';
+        const userRole = role || 'user'; 
         const user = await createUser(username, hashedPassword, email, userRole);
         res.status(201).json(user);
     } catch (error) {
@@ -73,48 +74,43 @@ const deleteUserController = async (req, res) => {
     }
 };
 
-// Login user
-const loginUserController = async (req, res) => {
-    const { email, password } = req.body;
+// Get user reviews
+const getUserReviewsController = async (req, res) => {
+    const userId = req.params.id;
     try {
-        const user = await getUserByEmail(email);
+        const reviews = await getUserReviews(userId);
+        res.status(200).json(reviews);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch user reviews' });
+    }
+};
+
+// Login user (Updated to use username)
+const loginUserController = async (req, res) => {
+    const { username, password } = req.body;  // Changed email to username
+    try {
+        const user = await getUserByUsername(username);  // Changed function to get user by username
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-
-        // Compare password hash stored in the DB
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password_hash); // Use password_hash here
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid password' });
         }
-
-        // Generate access and refresh tokens
-        const token = jwt.sign(
-            { id: user.id, role: user.role },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        const refreshToken = jwt.sign(
-            { id: user.id, role: user.role },
-            process.env.JWT_REFRESH_SECRET,
-            { expiresIn: '7d' }
-        );
-
-        // Ensure user details are under a `user` key in the response
-        res.status(200).json({
-            message: 'Login successful',
-            token,
-            refreshToken,
-            user: {
-                id: user.id,
-                role: user.role,
-                username: user.username,
-                email: user.email
-            }
-        });
+        res.status(200).json({ message: 'Login successful' });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+};
+
+// Get grades given by a user
+const getUserGradesController = async (req, res) => {
+    const userId = req.params.id;
+    try {
+        const grades = await getUserGrades(userId);
+        res.status(200).json(grades);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch user grades' });
     }
 };
 
@@ -124,5 +120,7 @@ module.exports = {
     getUserByIdController,
     updateUserController,
     deleteUserController,
-    loginUserController
+    getUserReviewsController,
+    loginUserController,
+    getUserGradesController 
 };

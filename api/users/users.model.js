@@ -34,12 +34,15 @@ const getUserById = async (id) => {
     }
 };
 
-// Get a user by email
-const getUserByEmail = async (email) => {
-    const query = 'SELECT * FROM users WHERE email = $1';
-    const values = [email];
-    const result = await pool.query(query, values);
-    return result.rows[0];
+// Get a user by username (Updated function to get user by username)
+const getUserByUsername = async (username) => {
+    try {
+        const result = await sql`SELECT * FROM users WHERE username = ${sql(username)}`;
+        return result[0];
+    } catch (error) {
+        console.error('Error fetching user by username:', error);
+        throw new Error('Failed to fetch user by username');
+    }
 };
 
 // Update a user
@@ -49,7 +52,7 @@ const updateUser = async (id, userData) => {
         const updates = {};
         if (username) updates.username = username;
         if (email) updates.email = email;
-        if (password) updates.password_hash = password;
+        if (password) updates.password_hash = password; // Using password_hash for consistency
 
         const result = await sql`UPDATE users SET ${sql(updates)} WHERE id = ${id}`;
         if (result.count === 0) {
@@ -75,11 +78,37 @@ const deleteUser = async (id) => {
     }
 };
 
+// Get user reviews
+const getUserReviews = async (userId) => {
+    try {
+        const result = await sql`
+            SELECT 
+                r.id AS review_id,
+                g.name AS game_name,
+                r.narrative_rating,
+                r.gameplay_rating,
+                r.artistic_rating,
+                r.created_at
+            FROM 
+                reviews r
+            JOIN 
+                games g ON r.game_id = g.id
+            WHERE 
+                r.user_id = ${userId}
+        `;
+        return result;
+    } catch (error) {
+        console.error('Error fetching user reviews:', error);
+        throw new Error('Failed to fetch user reviews');
+    }
+};
+
 module.exports = {
     createUser,
     getAllUsers,
     getUserById,
-    getUserByEmail,
+    getUserByUsername, 
     updateUser,
-    deleteUser
+    deleteUser,
+    getUserReviews,
 };

@@ -4,46 +4,43 @@ const {
     getUserById,
     updateUser,
     deleteUser,
-    getUserByEmail,
+    getUserReviews,
+    getUserByUsername,  // Updated function to use getUserByUsername
 } = require('./users.model');
 
-// Service for creating a user
 const createUserService = async (userData) => {
+    console.log('Creating user with data:', userData);
     return await createUser(userData.username, userData.password, userData.email, userData.role);
 };
 
-// Service for getting all users
 const getAllUsersService = async () => {
+    console.log('Fetching all users');
     return await getAllUsers();
 };
 
-// Service for getting a user by ID
 const getUserByIdService = async (id) => {
+    console.log('Fetching user by ID:', id);
     return await getUserById(id);
 };
 
-// Service for updating a user
 const updateUserService = async (id, userData) => {
+    console.log('Updating user with ID:', id, 'with data:', userData);
     return await updateUser(id, userData);
 };
 
-// Service for deleting a user
 const deleteUserService = async (id) => {
+    console.log('Deleting user with ID:', id);
     return await deleteUser(id);
 };
 
-// Service for getting a user by email
-const getUserByEmailService = async (email) => {
-    try {
-        const user = await getUserByEmail(email);
-        if (!user) {
-            console.log(`No user found with email: ${email}`);
-        }
-        return user;
-    } catch (error) {
-        console.error(`Error in getUserByEmailService: ${error.message}`);
-        throw error;
-    }
+const getUserReviewsService = async (userId) => {
+    console.log('Fetching reviews for user with ID:', userId);
+    return await getUserReviews(userId);
+};
+
+const getUserByUsernameService = async (username) => {
+    console.log('Fetching user by username:', username);
+    return await getUserByUsername(username);  // Updated service function
 };
 
 module.exports = {
@@ -52,5 +49,6 @@ module.exports = {
     getUserByIdService,
     updateUserService,
     deleteUserService,
-    getUserByEmailService,
+    getUserReviewsService,
+    getUserByUsernameService,  
 };

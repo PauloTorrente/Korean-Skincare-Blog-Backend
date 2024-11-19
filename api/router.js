@@ -1,28 +1,23 @@
 const express = require('express');
+
+// Import routers from API modules
 const authRouter = require('./auth/auth.router');
-const usersRouter = require('./users/users.router');
 const blogRouter = require('./blog/blog.router');
 const productsRouter = require('./products/products.router');
+const usersRouter = require('./users/users.router');
+
+// Import middleware for authentication and role validation
 const authenticate = require('../middlewares/auth.middleware');
 const checkAdmRole = require('../middlewares/role.middleware');
 
 const router = express.Router();
 
-// Debugging logs to check types of routers
-console.log('authRouter type:', typeof authRouter);
-console.log('usersRouter type:', typeof usersRouter);
-console.log('blogRouter type:', typeof blogRouter);
-console.log('productsRouter type:', typeof productsRouter);
+// Public routes
+router.use('/auth', authRouter); // Authentication routes (login/register)
+router.use('/products', productsRouter); // Public product browsing
 
-// Routes
-router.use('/auth', authRouter);
-router.use('/users', authenticate, checkAdmRole, usersRouter);
-router.use('/blog', authenticate, blogRouter);
-
-// Public route for products (e.g., viewing products)
-router.use('/products', productsRouter); // No authentication here
-
-// Refresh token route
-router.post('/refresh', require('./blog/blog.controller').refreshAccessTokenController);
+// Protected routes
+router.use('/blog', authenticate, blogRouter); // Blog routes (restricted to logged-in users)
+router.use('/users', authenticate, checkAdmRole, usersRouter); // User management (admin only)
 
 module.exports = router;
