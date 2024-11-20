@@ -1,6 +1,6 @@
 const express = require('express');
 const multer = require('multer');
-const { addProduct, getProductByCategory, getProductById, updateProduct } = require('./products.controller'); 
+const { addProduct, getProducts, getProductByCategory, getProductById, updateProduct } = require('./products.controller'); 
 
 // Initialize Router
 const router = express.Router();
@@ -17,6 +17,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Define routes with controller functions
+
+// Route to get all products (public endpoint)
+router.get('/', getProducts);
 
 // Route to add a product with image upload
 router.post('/', upload.single('image'), addProduct);
