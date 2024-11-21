@@ -5,6 +5,12 @@ const sql = neon(process.env.DATABASE_URL);
 export const addProduct = async (productData) => {
     try {
         const { name, price, inStock, category, brand, description, image } = productData;
+
+        // Check if image is valid
+        if (!image) {
+            throw new Error('Image is required for product creation');
+        }
+
         const result = await sql`
             INSERT INTO products (name, price, in_stock, category, brand, description, image) 
             VALUES (${name}, ${price}, ${inStock}, ${category}, ${brand}, ${description}, ${image}) 

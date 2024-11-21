@@ -1,14 +1,22 @@
 const express = require('express');
 const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const { addProduct, getProducts, getProductByCategory, getProductById, updateProduct } = require('./products.controller'); 
 
 // Initialize Router
 const router = express.Router();
 
+// Ensure the uploads directory exists
+const uploadsDir = path.join(__dirname, './uploads/');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 // Setup for Multer (Image Upload)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, './uploads/'); 
+    cb(null, uploadsDir); 
   },
   filename: (req, file, cb) => {
     cb(null, `${Date.now()}-${file.originalname}`);
