@@ -3,22 +3,28 @@ const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
 // Authentication middleware
 const authenticate = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1]; // Extract token from header
-    console.log('Token:', token); // Log the token for debugging
+  const authHeader = req.headers.authorization;
 
-    if (!token) {
-        return res.status(401).json({ message: 'No token provided' });
-    }
+  // Check if the token is present in the header
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.error('Token not provided or invalid format.');
+    return res.status(401).json({ message: 'No token provided or invalid format' });
+  }
 
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET); // Verify token
-        console.log('Decoded user:', decoded); // Log decoded user for debugging
-        req.user = decoded; // Assign user info to req.user
-        next();
-    } catch (error) {
-        console.error('Token verification failed:', error); // Log the error
-        return res.status(401).json({ message: 'Invalid token' });
-    }
+  const token = authHeader.split(' ')[1]; // Extract token from the header
+  console.log('Received token:', token); // Debugging log
+
+  try {
+    // Verify and decode the token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('Decoded token:', decoded); // Debugging log
+
+    req.user = decoded; // Attach decoded user info to `req`
+    next(); // Proceed to the next middleware or route
+  } catch (error) {
+    console.error('Token verification failed:', error.message); // Log the error
+    return res.status(401).json({ message: 'Invalid or expired token' });
+  }
 };
 
 module.exports = authenticate;

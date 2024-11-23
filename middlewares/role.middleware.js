@@ -1,11 +1,20 @@
+// Middleware to check admin role
 const checkAdmRole = (req, res, next) => {
-  console.log('User role:', req.user?.role); // Log the user role for debugging
-
-  if (!req.user || req.user.role !== 'admin') { // Check if role is admin
-      console.error('Access denied: Not an admin'); // Log access denial
-      return res.status(403).json({ message: 'Forbidden' }); // Forbidden
+  // Verify if the user is authenticated and has a role assigned
+  if (!req.user || !req.user.role) {
+    console.error('User not authenticated or role not defined.');
+    return res.status(403).json({ message: 'Access denied: User not authenticated or role not set' });
   }
-  next(); // Allow access if admin
+
+  console.log('User role:', req.user.role); // Debugging log
+
+  // Check if the user's role is "admin"
+  if (req.user.role !== 'admin') {
+    console.error('Access denied: User is not an admin.'); // Log the reason
+    return res.status(403).json({ message: 'Forbidden: Admin role required' });
+  }
+
+  next(); // Allow access if the role is "admin"
 };
 
 module.exports = checkAdmRole;
