@@ -1,13 +1,13 @@
 const Product = require('./products.model');
 
-// Add a new product
+// Add a new product with an Imgur URL
 const addProduct = async (req, res) => {
   try {
-    const { name, price, description, category, brand } = req.body;
+    const { name, price, description, category, brand, image_url } = req.body; // Use image_url instead of file uploads
 
-    const image = req.file
-      ? `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
-      : null;
+    if (!image_url) {
+      return res.status(400).json({ message: 'Image URL is required' });
+    }
 
     const newProduct = await Product.createProduct({
       name,
@@ -15,7 +15,7 @@ const addProduct = async (req, res) => {
       description,
       category,
       brand,
-      image,
+      image: image_url, // Use the provided image URL
     });
 
     res.status(201).json(newProduct);
@@ -29,16 +29,7 @@ const addProduct = async (req, res) => {
 const getProducts = async (req, res) => {
   try {
     const products = await Product.getAllProducts();
-
-    // Adicionar a URL completa da imagem
-    const updatedProducts = products.map((product) => ({
-      ...product,
-      image: product.image
-        ? `${req.protocol}://${req.get('host')}/uploads/${product.image}`
-        : null,
-    }));
-
-    res.status(200).json(updatedProducts);
+    res.status(200).json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ message: 'Error fetching products', error: error.message });
@@ -55,15 +46,7 @@ const getProductByCategory = async (req, res) => {
       return res.status(404).json({ message: 'No products found for this category' });
     }
 
-    // Adicionar a URL completa da imagem
-    const updatedProducts = products.map((product) => ({
-      ...product,
-      image: product.image
-        ? `${req.protocol}://${req.get('host')}/uploads/${product.image}`
-        : null,
-    }));
-
-    res.status(200).json(updatedProducts);
+    res.status(200).json(products);
   } catch (error) {
     console.error('Error fetching products by category:', error);
     res.status(500).json({ message: 'Error fetching products', error: error.message });
@@ -80,10 +63,6 @@ const getProductById = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    product.image = product.image
-      ? `${req.protocol}://${req.get('host')}/uploads/${product.image}`
-      : null;
-
     res.status(200).json(product);
   } catch (error) {
     console.error('Error fetching product by ID:', error);
@@ -94,22 +73,21 @@ const getProductById = async (req, res) => {
 // Update a product by ID
 const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const updateData = req.body;
-
-  if (req.file) {
-    updateData.image = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-  }
+  const { name, price, description, category, brand, image_url } = req.body;
 
   try {
-    const updatedProduct = await Product.updateProduct(id, updateData);
+    const updatedProduct = await Product.updateProduct(id, {
+      name,
+      price,
+      description,
+      category,
+      brand,
+      image: image_url, // Update with new image URL
+    });
 
     if (!updatedProduct) {
       return res.status(404).json({ message: 'Product not found' });
     }
-
-    updatedProduct.image = updatedProduct.image
-      ? `${req.protocol}://${req.get('host')}/uploads/${updatedProduct.image}`
-      : null;
 
     res.status(200).json({ message: 'Product updated successfully', updatedProduct });
   } catch (error) {
