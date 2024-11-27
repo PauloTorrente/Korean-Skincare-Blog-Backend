@@ -1,23 +1,27 @@
 const Product = require('./products.model');
 
-// Add a new product with an Imgur URL
+// Add a new product with multiple image URLs
 const addProduct = async (req, res) => {
   try {
-    const { name, price, description, category, brand, image_url } = req.body; // Use image_url instead of file uploads
+    // Extract product data from the request body
+    const { name, price, description, category, brand, image_urls } = req.body; // Accepts an array of image URLs
 
-    if (!image_url) {
-      return res.status(400).json({ message: 'Image URL is required' });
+    // Validate if at least one image URL is provided
+    if (!Array.isArray(image_urls) || image_urls.length === 0) {
+      return res.status(400).json({ message: 'At least one image URL is required' });
     }
 
+    // Create the product with the provided details
     const newProduct = await Product.createProduct({
       name,
       price,
       description,
       category,
       brand,
-      image: image_url, // Use the provided image URL
+      images: image_urls, // Save array of image URLs
     });
 
+    // Return the created product
     res.status(201).json(newProduct);
   } catch (error) {
     console.error('Error adding product:', error);
@@ -25,7 +29,7 @@ const addProduct = async (req, res) => {
   }
 };
 
-// Get all products (public endpoint)
+// Fetch all products
 const getProducts = async (req, res) => {
   try {
     const products = await Product.getAllProducts();
@@ -36,7 +40,7 @@ const getProducts = async (req, res) => {
   }
 };
 
-// Get products by category
+// Fetch products by category
 const getProductByCategory = async (req, res) => {
   const { category } = req.params;
   try {
@@ -53,7 +57,7 @@ const getProductByCategory = async (req, res) => {
   }
 };
 
-// Get a product by ID
+// Fetch a product by ID
 const getProductById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -73,16 +77,22 @@ const getProductById = async (req, res) => {
 // Update a product by ID
 const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, price, description, category, brand, image_url } = req.body;
+  const { name, price, description, category, brand, image_urls } = req.body;
 
   try {
+    // Ensure image URLs are provided as an array
+    if (!Array.isArray(image_urls)) {
+      return res.status(400).json({ message: 'Image URLs must be an array' });
+    }
+
+    // Update the product with new details
     const updatedProduct = await Product.updateProduct(id, {
       name,
       price,
       description,
       category,
       brand,
-      image: image_url, // Update with new image URL
+      images: image_urls,
     });
 
     if (!updatedProduct) {
