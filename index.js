@@ -14,10 +14,10 @@ app.use(express.json());
 
 // CORS Middleware to allow requests from specific origin
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://korean-skincare-e-commerce.vercel.app'], 
+    origin: '*', // Allow all origins temporarily
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  }));
 
 // Use the main router with the /api prefix
 app.use("/api", router); 
